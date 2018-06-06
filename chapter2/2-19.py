@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from operator import itemgetter
 
 with open('hightemp.txt', 'r') as f:
     text = f.readlines()
