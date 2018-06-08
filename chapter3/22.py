@@ -10,7 +10,7 @@ with open("./jawiki-country.json", 'r') as f:
 for k in dic.keys():
     if u"イギリス" in dic[k]["title"]:
         text = dic[k]["text"]
-print(text)
+
 regex = r'Category:\b(\w*)\b'
 pattern = re.compile(regex)
 
