@@ -3,7 +3,7 @@
 import MeCab
 
 path = './neko.txt'
-mecab = MeCab.Tagger('-Ochasen')
+mecab = MeCab.Tagger()
 
 with open(path) as f:
     txt = f.read()
