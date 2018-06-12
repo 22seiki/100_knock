@@ -6,32 +6,30 @@ path = './neko.txt.mecab'
 with open(path) as f:
     txt = str(f.read())
 
-surface = []
-base = []
-pos = []
-pos1 = []
-for line in txt.split("\n"):
-    line = re.sub(",", " ", line)
-    lists = list(line.split())
-    for j, v in enumerate(lists):
-        if j == 0:
-            surface.append(v)
-        elif j == 1:
-            pos.append(v)
-        elif j == 2:
-            pos1.append(v)
-        elif j == 7:
-            base.append(v)
 
-values = []
-values.append(surface)
-values.append(base)
-values.append(pos)
-values.append(pos1)
+def read_results():
+    lines = []
+    for line in txt.split("\n"):
+        line = re.sub(",", " ", line)
 
-keys = ['surface', 'base', 'pos', 'pos1']
-dic = {}
-for k, v in zip(keys, values):
-    dic[k] = values
+        if 'EOS' in line:
+            continue
+        lists = list(line.split())
+        dic = {}
+        for j, v in enumerate(lists):
+            if j == 0:
+                dic["surface"] = v
+            if j == 1:
+                dic["pos"] = v
+            if j == 2:
+                dic["pos2"] = v
+            if j == 7:
+                dic["base"] = v
+        lines.append(dic)
 
-print(dic['surface'])
+        if "。" in dic.values():
+            print(lines)
+            lines = []
+
+if __name__ == '__main__':
+    read_results()
