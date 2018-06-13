@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import re
-path = './neko.txt.mecab'
-
-with open(path) as f:
-    txt = str(f.read())
 
 
 def read_results():
+    path = './neko.txt.mecab'
+    with open(path) as f:
+        txt = str(f.read())
+
     lines = []
+    results = []
     for line in txt.split("\n"):
         line = re.sub(",", " ", line)
 
@@ -22,14 +23,17 @@ def read_results():
             if j == 1:
                 dic["pos"] = v
             if j == 2:
-                dic["pos2"] = v
+                dic["pos1"] = v
             if j == 7:
                 dic["base"] = v
         lines.append(dic)
 
         if "。" in dic.values():
-            print(lines)
+            results.append(lines)
             lines = []
+    return results
 
 if __name__ == '__main__':
-    read_results()
+    results = read_results()
+    for line in results:
+        print(line)
