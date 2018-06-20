@@ -21,8 +21,34 @@ class Morph:
             print(self.surface, self.base, self.pos, self.pos1)
 
 
+class Chunk():
+    def __init__(self):
+        self.morphs = []
+        self.dst = 0
+        self.srcs = []
+    
+    def chunk(self, sentences):
+        s = ""
+        for line in sentences:
+            # print(line)
+            if isinstance(line, list):
+                self.morphs.append(s)
+                self.srcs.append([])
+                s = ""
+            else:
+                s += line["surface"]
+        self.morphs.append(s)
+        for line in sentences:
+            if isinstance(line, list):
+                line[2] = re.sub("D", "", line[2])
+                self.dst = int(line[2])
+                if self.dst != -1:
+                    self.srcs[self.dst].append(int(line[1]))
+                i = int(line[1]) + 1
+                print(self.morphs[i], self.srcs[i-1], self.dst)
+
 if __name__ == '__main__':
-    morph = Morph()
+    chunk = Chunk()
     path = "./neko.txt.cabocha"
     with open(path, "r") as f:
         txt = str(f.read())
@@ -31,9 +57,7 @@ if __name__ == '__main__':
     for line in txt.split("\n"):
         line = re.sub("[,|\t]", " ", line)
         lists = list(line.split(" "))
-        if len(lists) < 6 and "EOS" not in lists:
-            continue
-        if "EOS" not in lists:
+        if len(lists) > 5 and "EOS" not in lists:
             dic = {
                 "surface": lists[0],
                 "base": lists[7],
@@ -41,7 +65,9 @@ if __name__ == '__main__':
                 "pos1": lists[2]
             }
             lines.append(dic)
-        else:
+        elif "EOS" not in lists:
+            lines.append(lists)
+        if "EOS" in lists:
             sentences.append(lines)
             lines = []
-    morph.analysis(sentences[2])
+    chunk.chunk(sentences[7])
