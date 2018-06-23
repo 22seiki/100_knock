@@ -12,7 +12,6 @@ class Morph:
         self.sentences = []
 
     def analysis(self, sentences):
-        print(sentences)
         for line in sentences:
             self.surface = line["surface"]
             self.base = line["base"]
@@ -26,7 +25,7 @@ class Chunk():
         self.morphs = []
         self.dst = 0
         self.srcs = []
-    
+
     def chunk(self, sentences):
         s = ""
         for line in sentences:
@@ -46,6 +45,7 @@ class Chunk():
                     self.srcs[self.dst].append(int(line[1]))
                 i = int(line[1]) + 1
                 print(self.morphs[i], self.srcs[i-1], self.dst)
+
 
 if __name__ == '__main__':
     chunk = Chunk()
