@@ -4,25 +4,18 @@ import re
 
 
 class Morph:
-    def __init__(self):
-        self.surface = ""
-        self.base = ""
-        self.pos = ""
-        self.pos1 = ""
-        self.sentences = []
+    def __init__(self, surface, base, pos, pos1):
+        self.surface = surface
+        self.base = base
+        self.pos = pos
+        self.pos1 = pos1
 
-    def analysis(self, sentences):
-        print(sentences)
-        for line in sentences:
-            self.surface = line["surface"]
-            self.base = line["base"]
-            self.pos = line["pos"]
-            self.pos1 = line["pos1"]
-            print(self.surface, self.base, self.pos, self.pos1)
+    def __str__(self):
+        return "{0} {1} {2} {3}"\
+            .format(self.surface, self.base, self.pos, self.pos1)
 
 
 if __name__ == '__main__':
-    morph = Morph()
     path = "./neko.txt.cabocha"
     with open(path, "r") as f:
         txt = str(f.read())
@@ -44,4 +37,9 @@ if __name__ == '__main__':
         else:
             sentences.append(lines)
             lines = []
-    morph.analysis(sentences[2])
+
+    for i, sentence in enumerate(sentences):
+        if i == 2:
+            for lists in sentence:
+                print(Morph(lists["surface"], lists["base"],
+                            lists["pos"], lists["pos1"]))
