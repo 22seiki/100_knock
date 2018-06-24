@@ -4,51 +4,28 @@ import re
 
 
 class Morph:
-    def __init__(self):
-        self.surface = ""
-        self.base = ""
-        self.pos = ""
-        self.pos1 = ""
-        self.sentences = []
+    def __init__(self, surface, base, pos, pos1):
+        self.surface = surface
+        self.base = base
+        self.pos = pos
+        self.pos1 = pos1
 
-    def analysis(self, sentences):
-        for line in sentences:
-            self.surface = line["surface"]
-            self.base = line["base"]
-            self.pos = line["pos"]
-            self.pos1 = line["pos1"]
-            print(self.surface, self.base, self.pos, self.pos1)
+    def __str__(self):
+        return "{0} {1} {2} {3}"\
+            .format(self.surface, self.base, self.pos, self.pos1)
 
 
-class Chunk():
+class Chunk:
     def __init__(self):
         self.morphs = []
         self.dst = 0
         self.srcs = []
 
-    def chunk(self, sentences):
-        s = ""
-        for line in sentences:
-            # print(line)
-            if isinstance(line, list):
-                self.morphs.append(s)
-                self.srcs.append([])
-                s = ""
-            else:
-                s += line["surface"]
-        self.morphs.append(s)
-        for line in sentences:
-            if isinstance(line, list):
-                line[2] = re.sub("D", "", line[2])
-                self.dst = int(line[2])
-                if self.dst != -1:
-                    self.srcs[self.dst].append(int(line[1]))
-                i = int(line[1]) + 1
-                print(self.morphs[i], self.srcs[i-1], self.dst)
+    def __call__(self, sentence):
+        self.srcs = [[] for i in range(len(sentence))]
 
 
 if __name__ == '__main__':
-    chunk = Chunk()
     path = "./neko.txt.cabocha"
     with open(path, "r") as f:
         txt = str(f.read())
@@ -64,10 +41,29 @@ if __name__ == '__main__':
                 "pos": lists[1],
                 "pos1": lists[2]
             }
-            lines.append(dic)
+            lines.insert(i, dic)
+            i += 1
         elif "EOS" not in lists:
+            i = len(lines)
             lines.append(lists)
         if "EOS" in lists:
             sentences.append(lines)
             lines = []
-    chunk.chunk(sentences[7])
+
+    for i, sentence in enumerate(sentences):
+        chunk = Chunk()
+        chunk(sentence)
+        s = ""
+        tmp = 0
+        for lines in sentence:
+            if isinstance(lines, list):
+                lines[2] = re.sub("D", "", lines[2])
+                chunk.dst = int(lines[2])
+                chunk.morphs.append(s)
+                chunk.srcs[chunk.dst].append(int(lines[1]))
+                s = ""
+                if i == 7:
+                    print(chunk.morphs[tmp], chunk.dst, chunk.srcs[tmp])
+                    tmp += 1
+            else:
+                s += lines["surface"]
