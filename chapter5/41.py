@@ -22,7 +22,7 @@ class Chunk:
         self.srcs = []
 
     def __call__(self, sentence):
-        self.srcs = [[] for i in range(len(sentence))]
+        self.srcs = [[] for lists in sentence if isinstance(lists, list)]
 
 
 if __name__ == '__main__':
@@ -60,7 +60,8 @@ if __name__ == '__main__':
                 lines[2] = re.sub("D", "", lines[2])
                 chunk.dst = int(lines[2])
                 chunk.morphs.append(s)
-                chunk.srcs[chunk.dst].append(int(lines[1]))
+                if chunk.dst != -1:
+                    chunk.srcs[chunk.dst].append(int(lines[1]))
                 s = ""
                 if i == 7:
                     print(chunk.morphs[tmp], chunk.dst, chunk.srcs[tmp])

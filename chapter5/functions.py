@@ -22,4 +22,7 @@ class Chunk:
         self.srcs = []
 
     def __call__(self, sentence):
-        self.srcs = [[] for i in range(len(sentence))]
+        self.srcs = [[] for lists in sentence if isinstance(lists, list)]
+
+    def __str__(self):
+        return "{0} {1} {2}".format(self.morphs, self.dst, self.srcs)
