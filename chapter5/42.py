@@ -57,7 +57,6 @@ if __name__ == '__main__':
         chunk = Chunk()
         chunk(sentence)
         s = ""
-        tmp = 0
         for lines in sentence:
             if isinstance(lines, list):
                 lines[2] = re.sub("D", "", lines[2])
@@ -69,15 +68,15 @@ if __name__ == '__main__':
                 s = ""
             else:
                 s += lines["surface"]
-        for id, src in enumerate(chunk.srcs):
+        for i, src in enumerate(chunk.srcs):
             if src == []:
                 continue
             if len(src) > 1:
                 for idx in src:
                     if chunk.morphs[idx] != "":
                         print("{0}\t{1}".format(chunk.morphs[idx],
-                                                chunk.morphs[id]))
-                    else:
-                        if chunk.morphs[idx] != "":
-                            print("{0}\t{1}".format(chunk.morphs[src[0]],
-                                                    chunk.morphs[id]))
+                                                chunk.morphs[i]))
+            else:
+                if chunk.morphs[src[0]] != "":
+                    print("{0}\t{1}".format(chunk.morphs[src[0]],
+                                            chunk.morphs[i]))
