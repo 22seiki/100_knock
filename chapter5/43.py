@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
-from functions import Chunk, Morph
+from functions import Chunk
 
 if __name__ == '__main__':
     path = "./neko.txt.cabocha"
@@ -28,7 +28,6 @@ if __name__ == '__main__':
         if "EOS" in lists:
             sentences.append(lines)
             lines = []
-
     for sentence in sentences:
         chunk = Chunk()
         chunk(sentence)
@@ -39,12 +38,13 @@ if __name__ == '__main__':
                 lines[2] = re.sub("D", "", lines[2])
                 chunk.dst = int(lines[2])
                 s = re.sub("[。|、|\s]", "", s)
-                if '動詞' in lists:
-                    chunk.morphs.append(s)
-                elif '名詞' in lists:
+                if '名詞' in lists:
                     chunk.morphs.append(s)
                     if chunk.dst != -1:
                         chunk.srcs[chunk.dst].append(int(lines[1]))
+                elif '動詞' in lists:
+                    s += 'V'
+                    chunk.morphs.append(s)
                 else:
                     chunk.morphs.append('')
                 s = ''
@@ -57,10 +57,10 @@ if __name__ == '__main__':
                 continue
             if len(src) > 1:
                 for idx in src:
-                    if chunk.morphs[idx] != "":
+                    if chunk.morphs[idx] != "" and 'V' in chunk.morphs[i]:
                         print("{0}\t{1}".format(chunk.morphs[idx],
-                                                chunk.morphs[i]))
+                                                chunk.morphs[i].strip('V')))
             else:
-                if chunk.morphs[src[0]] != "":
+                if chunk.morphs[src[0]] != "" and 'V' in chunk.morphs[i]:
                     print("{0}\t{1}".format(chunk.morphs[src[0]],
-                                            chunk.morphs[i]))
+                                            chunk.morphs[i].strip('V')))
