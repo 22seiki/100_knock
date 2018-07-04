@@ -41,5 +41,6 @@ if __name__ == '__main__':
     for i, sentence in enumerate(sentences):
         if i == 2:
             for lists in sentence:
-                print(Morph(lists["surface"], lists["base"],
-                            lists["pos"], lists["pos1"]))
+                morph = Morph(lists["surface"], lists["base"],
+                              lists["pos"], lists["pos1"])
+                print(morph)
