@@ -78,6 +78,19 @@ def make_paterns(morph1, morph2):
     return paterns
 
 
+def adjust_list(paterns):
+    regex = r'\t.+'
+    subst = re.compile(regex)
+    vlist = []
+    list = []
+    for patern in paterns:
+        if subst.sub('', patern) not in vlist:
+            vlist.append(subst.sub('', patern))
+            list.append(patern)
+        else:
+            sys.exit()
+    return list
+
 if __name__ == '__main__':
     path = "./neko.txt.cabocha"
     with open(path, "r") as f:
@@ -86,13 +99,16 @@ if __name__ == '__main__':
     v_sentenses = []
     for sentence in sentences:
         chunk = make_chunk(sentence)
+        patern_lists = []
         for i, src in enumerate(chunk.srcs):
             if [] == src:
                 continue
             for id in src:
                 paterns = make_paterns(chunk.morphs[i], chunk.morphs[id])
-                for patern in paterns:
-                    v_sentenses.append(patern)
+                patern_lists += paterns
+        paterns = adjust_list(patern_lists)
+        for patern in paterns:
+            v_sentenses.append(patern)
     counter = collections.Counter(v_sentenses)
     lines = ''
     for k in counter.keys():

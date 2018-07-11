@@ -3,7 +3,7 @@
 import collections
 import sys
 import re
-from functions import Chunk, Morph
+from functions import Chunk
 
 
 def make_sentences(text):
@@ -20,7 +20,6 @@ def make_sentences(text):
                 "pos": lists[1],
                 "pos1": lists[2]
             }
-            morph = Morph(dic['surface'], dic['base'], dic['pos'], dic['pos1'])
             lines.append(dic)
         elif "EOS" not in lists:
             lines.append(lists)
@@ -41,12 +40,12 @@ def make_chunk(sentence):
             id = int(lines[1])
             chunk.morphs.append([])
         else:
-            if lines['pos'] == '動詞':
+            if lines['pos1'] == 'サ変接続':
+                lines['surface'] = re.sub("[。|、|\s]", "", lines['surface'])
+                s = {lines['pos1']: lines['surface']}
+            elif lines['pos'] == '動詞':
                 lines['base'] = re.sub("[。|、|\s]", "", lines['base'])
                 s = {lines['pos']: [lines['surface'], lines['base']]}
-            elif lines['pos1'] == 'サ変接続':
-                lines['pos1'] = re.sub("[。|、|\s]", "", lines['pos1'])
-                s = {lines['pos1']: lines['surface']}
             else:
                 lines['surface'] = re.sub("[。|、|\s]", "", lines['surface'])
                 s = {lines['pos']: lines['surface']}
@@ -56,34 +55,52 @@ def make_chunk(sentence):
     return chunk
 
 
-def make_paterns(morph1, morph2):
-    print(morph1, morph2)
+def make_paterns(morph1, morph2, morph3):
     paterns = []
-    for i, vdic in enumerate(morph1):
-        if i < len(morph1):
-            if 'サ変接続' in vdic and '助詞' in morph1[i+1]:
-                if morph1[i+1]['助詞'] == 'を':
-                    print(morph1[i+1]['助詞'])
-                    s = vdic['サ変接続'] + morph1[i+1]['助詞']
-                    + morph1[i+2]['動詞'] + '\t'
-                    s2 = ''
-                    sv = ''
-                    flag = False
-                    for dic in morph2:
-                        if '動詞' not in dic:
-                            l = list(dic.values())
-                            sv += l[0]
-                        else:
-                            sv += dic['動詞'][0]
-                        if '助詞' in dic:
-                            s += dic['助詞'] + ' '
-                            s2 += sv + ' '
-                            sv = ''
-                            flag = True
-                    s += '\t' + s2
-                    if flag:
-                        paterns.append(s)
+    for i, s_dic in enumerate(morph1):
+        if i+1 < len(morph1):
+            if 'サ変接続' in s_dic and '助詞' in morph1[i+1] and\
+               morph1[i+1]['助詞'] == 'を':
+                for vdic in morph2:
+                    if '動詞' in vdic:
+                        s = s_dic['サ変接続'] + morph1[i+1]['助詞']\
+                            + vdic['動詞'][1] + '\t'
+                        s2 = ''
+                        sv = ''
+                        flag = False
+                        for dic in morph3:
+                            if '動詞' not in dic:
+                                l = list(dic.values())
+                                sv += l[0]
+                            else:
+                                sv += dic['動詞'][0]
+                            if '助詞' in dic:
+                                s += dic['助詞'] + ' '
+                                s2 += sv + ' '
+                                sv = ''
+                                flag = True
+                        s += '\t' + s2
+                        if flag:
+                            paterns.append(s)
     return paterns
+
+
+def adjust_list(paterns):
+    regex = r'\t.+'
+    subst = re.compile(regex)
+    vlist = []
+    list = []
+    for patern in paterns:
+        if subst.sub('', patern) not in vlist:
+            vlist.append(subst.sub('', patern))
+            list.append(patern)
+        else:
+            if patern in list:
+                print(vlist, patern, list)
+            else:
+                print(patern, list)
+                sys.exit()
+    return list
 
 
 if __name__ == '__main__':
@@ -98,9 +115,13 @@ if __name__ == '__main__':
             if [] == src:
                 continue
             for id in src:
-                paterns = make_paterns(chunk.morphs[i], chunk.morphs[id])
-                for patern in paterns:
-                    v_sentenses.append(patern)
+                for dic in chunk.morphs[i]:
+                    paterns = make_paterns(chunk.morphs[i-1],
+                                           chunk.morphs[i],
+                                           chunk.morphs[id])
+                    paterns = adjust_list(paterns)
+                    for patern in paterns:
+                        v_sentenses.append(patern)
     counter = collections.Counter(v_sentenses)
     lines = ''
     for k in counter.keys():
