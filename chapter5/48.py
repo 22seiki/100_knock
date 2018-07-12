@@ -47,9 +47,9 @@ def make_chunk(sentence):
 
 
 def make_path(chunk, path, id, end, lists):
-    if id == end:
+    if end in lists:
         return path
-    if chunk.srcs[id] == []:
+    elif chunk.srcs[id] == []:
         path.pop(len(path)-1)
         make_path(chunk, path, chunk.dst, end, lists)
     for i in chunk.srcs[id]:
@@ -58,6 +58,7 @@ def make_path(chunk, path, id, end, lists):
             lists.append(i)
             make_path(chunk, path, i, end, lists)
     return path
+
 
 if __name__ == '__main__':
     path = "./neko.txt.cabocha"
@@ -70,9 +71,9 @@ if __name__ == '__main__':
         for i in range(len(chunk.morphs)-1, 0, -1):
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
-            path = make_path(chunk, l, len(chunk.morphs)-1,
-                             len(chunk.morphs)-i-1, [])
-            if j == 7:
+            if j == 6:
+                path = make_path(chunk, l, len(chunk.morphs)-1,
+                                 len(chunk.morphs)-i-1, [])
                 s = ''
                 for v in reversed(path):
                     s += v
