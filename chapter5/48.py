@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import re
 from functions import Chunk
+n_dic = []
+n_flag = False
 
 
 def make_sentences(filename):
@@ -29,9 +31,12 @@ def make_sentences(filename):
 
 
 def make_chunk(sentence):
+    global n_dic
+    n_dic = []
     chunk = Chunk()
     chunk(sentence)
     s = ""
+    flag = False
     for lines in sentence:
         if isinstance(lines, list):
             lines[2] = re.sub("D", "", lines[2])
@@ -40,13 +45,19 @@ def make_chunk(sentence):
             chunk.morphs.append(s)
             if chunk.dst != -1:
                 chunk.srcs[chunk.dst].append(int(lines[1]))
+            if flag:
+                n_dic.append(s)
+                flag = False
             s = ""
         else:
             s += lines["surface"]
+            if lines['pos'] == '名詞':
+                flag = True
     return chunk
 
 
 def make_path(chunk, path, id, end, lists):
+    global n_flag
     if chunk.srcs[id] == [] and end not in lists:
         path.pop(len(path)-1)
         make_path(chunk, path, chunk.dst, end, lists)
@@ -56,8 +67,13 @@ def make_path(chunk, path, id, end, lists):
         if i not in lists:
             path.append(chunk.morphs[i] + ' -> ')
             lists.append(i)
+            if chunk.morphs[i] in n_dic:
+                n_flag = True
             make_path(chunk, path, i, end, lists)
-    return path
+    if n_flag:
+        return path
+    else:
+        return []
 
 
 if __name__ == '__main__':
@@ -72,6 +88,7 @@ if __name__ == '__main__':
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
             if j == 7:
+                n_flag = False
                 path = make_path(chunk, l, len(chunk.morphs)-1,
                                  len(chunk.morphs)-i-1, [])
                 s = ''
