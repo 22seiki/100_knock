@@ -3,7 +3,6 @@
 import re
 from functions import Chunk
 n_dic = []
-n_flag = False
 
 
 def make_sentences(filename):
@@ -57,7 +56,6 @@ def make_chunk(sentence):
 
 
 def make_path(chunk, path, id, end, lists):
-    global n_flag
     if chunk.srcs[id] == [] and end not in lists:
         path.pop(len(path)-1)
         make_path(chunk, path, chunk.dst, end, lists)
@@ -67,10 +65,12 @@ def make_path(chunk, path, id, end, lists):
         if i not in lists:
             path.append(chunk.morphs[i] + ' -> ')
             lists.append(i)
-            if chunk.morphs[i] in n_dic:
-                n_flag = True
             make_path(chunk, path, i, end, lists)
-    if n_flag:
+    flag = False
+    for v in path:
+        if v.strip(' -> ') in n_dic:
+            flag = True
+    if flag:
         return path
     else:
         return []
@@ -88,11 +88,11 @@ if __name__ == '__main__':
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
             if j == 7:
-                n_flag = False
                 path = make_path(chunk, l, len(chunk.morphs)-1,
                                  len(chunk.morphs)-i-1, [])
                 s = ''
                 for v in reversed(path):
                     s += v
-                print(s)
+                if s != '':
+                    print(s)
         j += 1
