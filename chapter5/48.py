@@ -66,14 +66,7 @@ def make_path(chunk, path, id, end, lists):
             path.append(chunk.morphs[i] + ' -> ')
             lists.append(i)
             make_path(chunk, path, i, end, lists)
-    flag = False
-    for v in path:
-        if v.strip(' -> ') in n_dic:
-            flag = True
-    if flag:
-        return path
-    else:
-        return []
+    return path
 
 
 if __name__ == '__main__':
@@ -85,6 +78,8 @@ if __name__ == '__main__':
     for sentence in sentences:
         chunk = make_chunk(sentence)
         for i in range(len(chunk.morphs)-1, 0, -1):
+            if chunk.morphs[len(chunk.morphs)-i-1] not in n_dic:
+                continue
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
             if j == 7:
