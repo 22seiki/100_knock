@@ -37,6 +37,7 @@ def make_chunk(sentence):
     s = ""
     ns = ''
     flag = False
+    nlists = []
     for lines in sentence:
         if isinstance(lines, list):
             lines[2] = re.sub("D", "", lines[2])
@@ -46,15 +47,15 @@ def make_chunk(sentence):
             if chunk.dst != -1:
                 chunk.srcs[chunk.dst].append(int(lines[1]))
             if flag:
-                n_dic[ns] = s
+                n_dic[s] = nlists
                 flag = False
             s = ""
-            ns = ''
+            nlists = []
         else:
             s += lines["surface"]
             if lines['pos'] == '名詞':
                 flag = True
-                ns = lines['surface']
+                nlists.append(lines['surface'])
     return chunk
 
 
@@ -78,21 +79,40 @@ def path_extraction(chunk, paths):
         else:
             s = chunk.morphs[i]
         morphs.append(s)
+    dic = {}
+    print(morphs, n_dic, paths)
     for i, morph in enumerate(morphs):
-        s = ''
-        if morph.strip(' -> ') not in n_dic.values():
+        if i == 0:
+            s = ''
+            flag = False
+        if morph.strip(' -> ') not in n_dic.keys():
+            for path in paths:
+                if morph in path:
+                    s += morph
+                    break
+            if morphs[len(morphs)-1] in s and not flag:
+                print(s2)
             continue
-        for k in n_dic.keys():
-            if k in morph:
-                s = 'X' + morph.strip(k+' -> ')
+        for k, v in n_dic.items():
+            if k in morphs[i]:
+                for v2 in v:
+                    if v2 in morphs[i]:
+                        if 'X' not in s:
+                            s += 'X' + morphs[i].strip(v2)
+        # print(s)
         for j in range(i+1, len(morphs)):
             for path in paths:
-                s2 = s
-                if morphs[j:len(morphs)] == path:
+                s2 = s.strip(' -> ')
+                # print(s2)
+                if morphs[j:len(morphs)] == path\
+                   and path not in dic.values():
+                    dic[j] = path
                     s2 += ' | '
                     for k, v in n_dic.items():
-                        if path[0].strip(' -> ') in v:
-                            s2 += 'Y' + path[0].strip(k)
+                        if path[0].strip(' -> ') in k:
+                            for v2 in v:
+                                if v2 in path[0]:
+                                    s2 += 'Y' + path[0].strip(v2)
                     if len(path) > 2:
                         for k in range(1, len(path)-1):
                             if k < len(path) - 2:
@@ -103,20 +123,25 @@ def path_extraction(chunk, paths):
                         s2 = s2.strip(' -> ')
                     s2 += ' | ' + morphs[len(morphs)-1]
                     print(s2)
-    """
-    repath = []
-    for p in path:
-        if p.strip(' -> ') in n_dic.values() and not x_flag:
-            for k in n_dic.keys():
-                if k in p:
-                    p = 'X' + p.strip(k)
-                    x_flag = True
-        elif p.strip(' -> ') in n_dic.values() and x_flag:
-            for k in n_dic.keys():
-                if k in p:
-                    p = 'Y' + p.strip(k)
-        repath.append(p)"""
-    return repath
+                    flag = True
+    for i, path in enumerate(paths):
+        if path not in dic.values():
+            dic[len(paths)+i] = path
+    for v in dic.values():
+        i = 1
+        p = v[0:len(v)]
+        for k, n in n_dic.items():
+            if p[0].strip(' -> ') == k:
+                for v in n:
+                    if v in p[0]:
+                        s = 'X' + p[0].strip(v)
+                for i in range(1, len(p)):
+                    for k in n_dic.keys():
+                        # print(p[i], k)
+                        if p[i].strip(' -> ') == k:
+                            print(s + 'Y')
+                            break
+                    s += p[i]
 
 
 if __name__ == '__main__':
@@ -130,7 +155,7 @@ if __name__ == '__main__':
         paths = []
         repaths = []
         for i in range(len(chunk.morphs)-1, 0, -1):
-            if chunk.morphs[len(chunk.morphs)-i-1] not in n_dic.values():
+            if chunk.morphs[len(chunk.morphs)-i-1] not in n_dic.keys():
                 continue
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
@@ -141,7 +166,6 @@ if __name__ == '__main__':
             for v in reversed(path):
                 repath.append(v)
             paths.append(repath)
-        if j == 7:
-            repath = path_extraction(chunk, paths)
-            repaths.append(repath)
+        if j == 5:
+            path_extraction(chunk, paths)
         j += 1
