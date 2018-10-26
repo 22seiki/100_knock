@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import re
 from functions import Chunk
+n_dic = []
 
 
 def make_sentences(filename):
@@ -29,9 +30,12 @@ def make_sentences(filename):
 
 
 def make_chunk(sentence):
+    global n_dic
+    n_dic = []
     chunk = Chunk()
     chunk(sentence)
     s = ""
+    flag = False
     for lines in sentence:
         if isinstance(lines, list):
             lines[2] = re.sub("D", "", lines[2])
@@ -40,24 +44,30 @@ def make_chunk(sentence):
             chunk.morphs.append(s)
             if chunk.dst != -1:
                 chunk.srcs[chunk.dst].append(int(lines[1]))
+            if flag:
+                n_dic.append(s)
+                flag = False
             s = ""
         else:
             s += lines["surface"]
+            if lines['pos'] == '名詞':
+                flag = True
     return chunk
 
 
 def make_path(chunk, path, id, end, lists):
-    if id == end:
-        return path
-    if chunk.srcs[id] == []:
+    if chunk.srcs[id] == [] and end not in lists:
         path.pop(len(path)-1)
         make_path(chunk, path, chunk.dst, end, lists)
     for i in chunk.srcs[id]:
+        if end in lists:
+            break
         if i not in lists:
             path.append(chunk.morphs[i] + ' -> ')
             lists.append(i)
             make_path(chunk, path, i, end, lists)
     return path
+
 
 if __name__ == '__main__':
     path = "./neko.txt.cabocha"
@@ -68,13 +78,16 @@ if __name__ == '__main__':
     for sentence in sentences:
         chunk = make_chunk(sentence)
         for i in range(len(chunk.morphs)-1, 0, -1):
+            if chunk.morphs[len(chunk.morphs)-i-1] not in n_dic:
+                continue
             chunk.dst = len(chunk.morphs)-1
             l = [chunk.morphs[len(chunk.morphs)-1]]
-            path = make_path(chunk, l, len(chunk.morphs)-1,
-                             len(chunk.morphs)-i-1, [])
             if j == 7:
+                path = make_path(chunk, l, len(chunk.morphs)-1,
+                                 len(chunk.morphs)-i-1, [])
                 s = ''
                 for v in reversed(path):
                     s += v
-                print(s)
+                if s != '':
+                    print(s)
         j += 1
